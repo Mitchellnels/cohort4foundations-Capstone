@@ -89,3 +89,22 @@ def export_results():
 
 
 export_results()
+
+
+def import_CSV():
+
+    insert_query = "INSERT INTO Assessments_Results (result_id,user_id,assessment_id,score,date_taken,manager_id,active) VALUES (?,?,?,?,?,?,?)"
+
+    with open("import.csv", "r") as csv_file:
+        reader = csv.reader(csv_file)
+        fields = next(
+            reader
+        )  # Header row, WE WILL NOT USE, but this will remove it from the dataset
+
+        for row in reader:
+            cursor.execute(insert_query, row)
+
+    connection.commit()
+
+
+import_CSV()
