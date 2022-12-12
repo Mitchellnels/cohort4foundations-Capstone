@@ -88,9 +88,6 @@ def export_results():
         writer.writerows(join)
 
 
-export_results()
-
-
 def import_CSV():
 
     insert_query = "INSERT INTO Assessments_Results (result_id,user_id,assessment_id,score,date_taken,manager_id,active) VALUES (?,?,?,?,?,?,?)"
@@ -105,6 +102,3 @@ def import_CSV():
             cursor.execute(insert_query, row)
 
     connection.commit()
-
-
-import_CSV()

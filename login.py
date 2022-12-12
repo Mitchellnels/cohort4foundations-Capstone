@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 import bcrypt
+from export import import_CSV, export_results
 
 connection = sqlite3.connect("schema.db")
 cursor = connection.cursor()
@@ -158,11 +159,37 @@ def view_users(where=None):
             )
 
 
+def view_your_user(user_id):
+    row = cursor.execute(
+        "SELECT * FROM User WHERE user_id LIKE ?", (user_id,)
+    ).fetchone()
+
+    headers = [
+        "person_id",
+        "first_name",
+        "last_name",
+        "phone",
+        "email",
+        "password",
+        "date_created",
+        "hire_date",
+        "user_type",
+        "active",
+    ]
+    print(
+        f"{headers[0]:20}{headers[1]:25}{headers[2]:30}{headers[3]:25}{headers[4]:35}{headers[5]:70}{headers[6]:30}{headers[7]:15}{headers[8]:15}{headers[9]:15}"
+    )
+
+    print(
+        f"{row[0]:<20}{row[1]:25}{str(row[2]):30}{str(row[3]):25}{str(row[4]):35}{str(row[5]):70}{str(row[6]):30}{str(row[7]):15}{str(row[8]):15}{str(row[9]):15}"
+    )
+
+
 # //////////////////////////////////// Update - User
 def edit_user():
     view_users()
 
-    headers = ["first_name", "last_name", "phone", "email", "password", "active"]
+    headers = ["first_name", "last_name", "phone_number", "email", "password", "active"]
 
     print("Choose one of the following: ")
     for index, header in enumerate(headers):
@@ -173,7 +200,29 @@ def edit_user():
 
     update_query = f"UPDATE user SET {field_name}=? WHERE user_id LIKE ?"
     new_value = input(f"New {field_name}: ")
-    cust_id = input("Customer ID: ")
+    cust_id = input("Person ID: ")
+
+    values = (new_value, cust_id)
+
+    cursor.execute(update_query, values)
+    connection.commit()
+
+
+def edit_your_user(user_id):
+    view_your_user(user_id)
+
+    headers = ["first_name", "last_name", "phone_number", "email", "password", "active"]
+
+    print("Choose one of the following: ")
+    for index, header in enumerate(headers):
+        print(f"{index}: {header}")
+
+    user_choice = int(input())
+    field_name = headers[user_choice]
+
+    update_query = f"UPDATE user SET {field_name}=? WHERE user_id LIKE ?"
+    new_value = input(f"New {field_name}: ")
+    cust_id = input("Person ID: ")
 
     values = (new_value, cust_id)
 
@@ -379,6 +428,8 @@ def management_menu(user_id):
           (12) Edit Assessment Results
           (13) Deactivate Result set
           (14) Quit Program
+          (15) Import CSV
+          (16) Export CSV
           """
         )
         if manager_menu == "1":
@@ -410,6 +461,10 @@ def management_menu(user_id):
         elif manager_menu == "14":
             print("Goodbye")
             break
+        elif manager_menu == "15":
+            import_CSV()
+        elif manager_menu == "16":
+            export_results()
         else:
             print("Invalid Input")
             return management_menu()
@@ -421,15 +476,16 @@ def view_user_menu(user_id):
 
         user_menu = input(
             """
-      (1) View Users
+      (1) View User
       (2) View Compotency
       (3) View Assessments
       (4) View Assessment Results
-      (5) Quit
+      (5) Edit Your User Info
+      (6) Quit
       """
         )
         if user_menu == "1":
-            view_users(where=None)
+            view_your_user(user_id)
 
         elif user_menu == "2":
             view_competency(where=None)
@@ -439,6 +495,8 @@ def view_user_menu(user_id):
         elif user_menu == "4":
             view_assessment_results(where=None)
         elif user_menu == "5":
+            edit_your_user(user_id)
+        elif user_menu == "6":
             print("Goodbye")
             break
         else:
